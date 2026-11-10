@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101114">
+<meta name="description" content="Registro personal de entrenamiento y progresión muscular">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<title>Gym Tracker Pro</title>
+<style>
+:root{color-scheme:dark;--bg:#101114;--panel:#1d1f25;--panel2:#252830;--line:#343741;--txt:#f4f4f5;--muted:#a1a1aa;--lime:#a3e635;--red:#fb7185}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:15px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding-bottom:calc(82px + env(safe-area-inset-bottom))}
+header{padding:22px 18px 14px;position:sticky;top:0;background:rgba(16,17,20,.96);backdrop-filter:blur(12px);z-index:5;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:11px}.logo{width:42px;height:42px;border-radius:13px;background:#26351a;display:grid;place-items:center;color:var(--lime);font-size:23px}.brand h1{font-size:19px;margin:0;letter-spacing:.7px}.brand small{color:var(--muted);font-size:11px;letter-spacing:1.4px}
+main{max-width:760px;margin:auto;padding:16px}.screen{display:none}.screen.active{display:block}
+h2{font-size:21px;margin:8px 0 14px}h3{font-size:15px;margin:0 0 10px}.muted{color:var(--muted)}.small{font-size:12px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px}.metric{font-size:27px;font-weight:750;margin:5px 0}.lime{color:var(--lime)}
+button,input,select,textarea{font:inherit}button{border:0;border-radius:12px;padding:12px 14px;background:var(--lime);color:#17200c;font-weight:750;cursor:pointer}button.secondary{background:var(--panel2);color:var(--txt);border:1px solid var(--line)}button.danger{background:#49232b;color:#fecdd3}button.smallbtn{padding:8px 10px;font-size:12px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}.tabs{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;justify-content:space-around;overflow-x:auto;background:#17181d;border-top:1px solid var(--line);padding:9px 5px calc(9px + env(safe-area-inset-bottom))}.tabs button{background:transparent;color:var(--muted);padding:8px 5px;font-size:10px;flex:1;min-width:55px}.tabs button.active{color:var(--lime)}
+label{display:block;color:var(--muted);font-size:12px;margin:10px 0 5px}input,select,textarea{width:100%;background:#111217;border:1px solid var(--line);border-radius:10px;padding:11px;color:var(--txt)}textarea{min-height:72px;resize:vertical}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.exercise{padding:12px;background:var(--panel2);border-radius:12px;margin:9px 0}.exercise strong{display:block;margin-bottom:5px}.row{display:flex;justify-content:space-between;gap:8px;align-items:center}.pill{font-size:11px;color:var(--lime);background:#28351c;padding:5px 8px;border-radius:30px}
+table{width:100%;border-collapse:collapse;font-size:13px}td,th{text-align:left;padding:9px 5px;border-bottom:1px solid var(--line)}th{color:var(--muted);font-weight:600}
+.entry{border-left:3px solid var(--lime);padding-left:11px;margin:12px 0}.empty{text-align:center;padding:30px 12px;color:var(--muted)}
+@media(min-width:600px){main{padding:22px}.metric{font-size:32px}}
+</style>
+</head>
+<body>
+<header><div class="brand"><div class="logo">🏋</div><div><h1>GYM TRACKER PRO</h1><small>YOUR TRAINING. YOUR PROGRESS.</small></div><span style="margin-left:auto" class="pill" id="offlineState">LOCAL</span></div></header>
+<main>
+<section id="dashboard" class="screen active">
+<h2>Resumen</h2>
+<div class="grid">
+ <div class="card"><div class="small">SESIONES REGISTRADAS</div><div class="metric" id="sessionCount">0</div><div class="small">En tu historial</div></div>
+ <div class="card"><div class="small">EJERCICIOS REGISTRADOS</div><div class="metric" id="exerciseCount">0</div><div class="small">Entradas de ejercicio</div></div>
+</div>
+<div class="card"><div class="row"><h3>Último entrenamiento</h3><span class="pill" id="lastDate">—</span></div><div id="lastWorkout" class="muted">Todavía no hay entrenamientos.</div></div>
+<div class="card"><h3>Últimas sesiones</h3><div id="recentSessions"></div></div>
+<div class="actions"><button onclick="showScreen('add')">＋ Nuevo entrenamiento</button><button class="secondary" onclick="showScreen('history')">Ver historial</button></div>
+</section>
+
+<section id="routines" class="screen">
+<h2>Mis rutinas · 5 días</h2>
+<p class="muted">Pesos iniciales orientativos en lb. En ejercicios sin historial, calibra la carga con técnica estricta y termina cada serie con 2–3 repeticiones en reserva. Las máquinas pueden variar entre sucursales.</p>
+<div id="routineList"></div>
+<div class="card"><h3>Regla de progresión</h3><p class="muted">Cuando completes todas las series en el máximo del rango, con recorrido controlado y sin dolor, sube el mínimo incremento disponible (normalmente 2.5–5 lb en máquinas de tren superior y 5–10 lb en tren inferior). Si pierdes técnica o no alcanzas el mínimo de reps, mantén o reduce la carga.</p></div>
+</section>
+
+<section id="add" class="screen">
+<h2>Nuevo entrenamiento</h2>
+<div class="card">
+ <div class="formgrid">
+  <div><label>Fecha</label><input type="date" id="workDate"></div>
+  <div><label>Grupo muscular</label><select id="muscle"><option>Piernas</option><option>Pecho</option><option>Espalda</option><option>Bíceps</option><option>Tríceps</option><option>Hombros</option><option>Abdomen</option><option>Full body</option><option>Otro</option></select></div>
+ </div>
+ <label>Nombre / notas de la sesión (opcional)</label><input id="workName" placeholder="Ej. Día 2 — Espalda y bíceps">
+</div>
+<div class="card">
+ <div class="row"><h3>Ejercicios</h3><button class="smallbtn" onclick="addExerciseRow()">＋ Añadir</button></div>
+ <div id="exerciseRows"></div>
+ <button class="secondary" style="width:100%;margin-top:8px" onclick="addExerciseRow()">＋ Añadir otro ejercicio</button>
+</div>
+<div class="card"><label>Notas generales</label><textarea id="workNotes" placeholder="Energía, técnica, molestias, etc."></textarea></div>
+<button style="width:100%" onclick="saveWorkout()">Guardar entrenamiento</button>
+</section>
+
+<section id="history" class="screen">
+<h2>Historial</h2>
+<div class="card"><label>Filtrar por grupo muscular</label><select id="historyFilter" onchange="renderHistory()"><option value="">Todos</option><option>Piernas</option><option>Pecho</option><option>Espalda</option><option>Bíceps</option><option>Tríceps</option><option>Hombros</option><option>Abdomen</option><option>Full body</option><option>Otro</option></select></div>
+<div id="historyList"></div>
+</section>
+
+<section id="progress" class="screen">
+<h2>Progresión</h2>
+<div class="card"><label>Selecciona un ejercicio</label><select id="progressExercise" onchange="renderProgress()"></select><div id="progressDetail" class="muted">Añade entrenamientos para ver tu progresión.</div></div>
+<div class="card"><h3>Récords personales</h3><div id="records"></div></div>
+</section>
+
+<section id="backup" class="screen">
+<h2>Datos y respaldo</h2>
+<div class="card"><h3>Tu información</h3><p class="muted">Los registros se guardan en el almacenamiento de este navegador/dispositivo. Exporta una copia periódicamente para evitar perderlos.</p><div class="actions"><button onclick="exportData()">Exportar respaldo JSON</button><button class="secondary" onclick="document.getElementById('importFile').click()">Importar respaldo</button><input id="importFile" type="file" accept="application/json" hidden onchange="importData(event)"></div></div>
+<div class="card"><h3>Instalar en iPhone</h3><ol class="muted"><li>Publica esta carpeta en un hosting HTTPS gratuito.</li><li>Abre el enlace en Safari.</li><li>Toca Compartir → Añadir a pantalla de inicio.</li></ol><p class="small">La instalación PWA requiere HTTPS. GitHub Pages ofrece hosting estático gratuito.</p></div>
+<div class="card"><h3>Privacidad</h3><p class="muted">No hay cuenta ni servidor conectado. Los datos permanecen en tu dispositivo, salvo que exportes y compartas el archivo de respaldo.</p><button class="danger" onclick="clearData()">Borrar todos los datos</button></div>
+</section>
+</main>
+<nav class="tabs">
+<button class="active" data-screen="dashboard" onclick="showScreen('dashboard')">⌂<br>Inicio</button>
+<button data-screen="routines" onclick="showScreen('routines')">▦<br>Rutinas</button>
+<button data-screen="add" onclick="showScreen('add')">＋<br>Registrar</button>
+<button data-screen="history" onclick="showScreen('history')">▤<br>Historial</button>
+<button data-screen="progress" onclick="showScreen('progress')">↗<br>Progreso</button>
+<button data-screen="backup" onclick="showScreen('backup')">⚙<br>Datos</button>
+</nav>
+<script>
+const KEY='gymTrackerPro_v1';
+let workouts=[];
+const $=id=>document.getElementById(id);
+function load(){try{workouts=JSON.parse(localStorage.getItem(KEY)||'[]')}catch{workouts=[]}}
+function persist(){localStorage.setItem(KEY,JSON.stringify(workouts));renderAll()}
+function showScreen(id){document.querySelectorAll('.screen').forEach(x=>x.classList.toggle('active',x.id===id));document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('active',x.dataset.screen===id));if(id==='history')renderHistory();if(id==='progress')renderProgressOptions();if(id==='routines')renderRoutines();window.scrollTo(0,0)}
+const routines=[
+{day:1,title:'Pecho + tríceps',muscle:'Pecho',items:[
+['Chest Press Machine',3,'8–12','130 lb (historial: 130 × 15; empieza con 125–130)',130],['Incline Press Machine',3,'8–12','80 lb (historial: 80 × 12)',80],['Pec Fly',3,'10–15','110–120 lb (historial: hasta 120 × 15)',115],['Tricep Extension',3,'10–15','100–105 lb; no empezar en 115',100],['Rope Tricep Pushdown',2,'10–15','35–40 lb (historial: 40 × 15)',35]]},
+{day:2,title:'Espalda + bíceps',muscle:'Espalda',items:[
+['Lat Pulldown',3,'8–12','Por calibrar: prueba ligera y ajusta a 2–3 reps en reserva',null],['Low Row',3,'8–12','105–115 lb (historial: 115 × 12 × 3)',105],['Seated Cable Row (agarre distinto)',2,'10–12','Por calibrar según máquina',null],['Reverse Pec Deck',2,'12–15','Por calibrar; control estricto',null],['Biceps Curl Machine',3,'10–15','Por calibrar; sin balanceo',null],['Cable Hammer Curl',2,'10–15','Por calibrar; sin balanceo',null]]},
+{day:3,title:'Piernas A · cuádriceps',muscle:'Piernas',items:[
+['Leg Press',3,'10–15','200–220 lb (historial: 220 × 15 × 3)',200],['Leg Extension',3,'10–15','140–150 lb (historial: 150 × 12 × 3)',140],['Seated Leg Curl',3,'10–15','65–70 lb (historial: 70 × 12 × 3)',65],['Calf Extension',3,'12–15','130–140 lb (historial: 140 × 15 × 3)',130],['Abdominal Crunch',3,'12–15','Carga moderada; sin tirar del cuello',null]]},
+{day:4,title:'Hombros + pecho complementario',muscle:'Hombros',items:[
+['Shoulder Press Machine',3,'8–12','Empieza 75–85 lb; tu registro de 97.5 × 15 es alto volumen',80],['Seated Dumbbell Press (peso total)',2,'8–12','70–80 lb total; historial hasta 90 lb',70],['Lateral Raise',3,'12–15','40–50 lb si es la misma máquina; prioriza control',40],['Reverse Pec Deck',2,'12–15','Por calibrar; deltoide posterior',null],['Incline Press Machine',2,'10–12','70–80 lb; volumen complementario',70]]},
+{day:5,title:'Piernas B · cadena posterior + espalda',muscle:'Piernas',items:[
+['Seated Leg Curl',3,'10–15','65–70 lb (historial: 70 × 12 × 3)',65],['Glute Bridge',3,'10–12','50–60 lb (historial: 60 × 12 × 3)',50],['Leg Press (posición cómoda)',2,'12–15','180–200 lb; no repetir el esfuerzo máximo del día 3',180],['Low Row',3,'10–12','100–110 lb; deja margen para recuperación',100],['Lat Pulldown',2,'10–12','Por calibrar según máquina',null],['Calf Extension',2,'12–15','120–140 lb',120]]}
+];
+function renderRoutines(){$('routineList').innerHTML=routines.map(r=>`<div class="card"><div class="row"><h3>Día ${r.day} · ${r.title}</h3><span class="pill">${r.items.length} ejercicios</span></div>${r.items.map((it,i)=>`<div class="exercise"><div class="row"><b>${esc(it[0])}</b><span class="small">${it[1]} series</span></div><div class="small">${it[2]} reps · Descanso ${r.day===3||r.day===5?'90–120':'60–90'} s</div><p class="small">Peso sugerido: <b class="lime">${esc(it[3])}</b></p><button class="secondary smallbtn" onclick="startRoutineExercise(${r.day},${i})">Registrar ejercicio</button></div>`).join('')}<button onclick="startRoutine(${r.day})">Registrar sesión completa</button></div>`).join('')}
+function startRoutine(day){let r=routines.find(x=>x.day===day);$('muscle').value=r.muscle;$('workName').value=`Día ${r.day} — ${r.title}`;$('exerciseRows').innerHTML='';r.items.forEach(it=>addExerciseRow({name:it[0],weight:it[4],sets:it[1],reps:it[2],suggested:it[3]}));showScreen('add')}
+function startRoutineExercise(day,index){let r=routines.find(x=>x.day===day),it=r.items[index];$('muscle').value=r.muscle;$('workName').value=`Día ${r.day} — ${r.title}`;$('exerciseRows').innerHTML='';addExerciseRow({name:it[0],weight:it[4],sets:it[1],reps:it[2],suggested:it[3]});showScreen('add')}
+function fmtDate(d){if(!d)return 'Sin fecha';let [y,m,day]=d.split('-');return `${day}/${m}/${y}`}
+function addExerciseRow(data={}){let wrap=document.createElement('div');wrap.className='exercise';wrap.innerHTML=`<div class="row"><strong>Ejercicio</strong><button class="danger smallbtn" type="button">Quitar</button></div><input class="exname" placeholder="Ej. Leg Press" value="${esc(data.name||'')}"><div class="formgrid"><div><label>Peso usado (lb)</label><input class="exweight" type="number" step="0.5" placeholder="Ej. 120" value="${data.weight??''}"></div><div><label>Series</label><input class="exsets" type="number" min="1" placeholder="3" value="${data.sets??3}"></div><div><label>Repeticiones por serie</label><input class="exreps" placeholder="12, 12, 10" value="${esc(data.reps||'')}"></div><div><label>Esfuerzo / notas</label><input class="exnotes" placeholder="Opcional" value="${esc(data.notes||'')}"></div></div>${data.suggested?`<p class="small">Peso sugerido: <b class="lime">${esc(data.suggested)}</b></p>`:''}`;wrap.querySelector('button').onclick=()=>wrap.remove();$('exerciseRows').appendChild(wrap)}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function saveWorkout(){let date=$('workDate').value,muscle=$('muscle').value;let exercises=[...document.querySelectorAll('.exercise')].map(e=>({name:e.querySelector('.exname').value.trim(),weight:Number(e.querySelector('.exweight').value)||null,sets:Number(e.querySelector('.exsets').value)||1,reps:e.querySelector('.exreps').value.trim(),notes:e.querySelector('.exnotes').value.trim()})).filter(e=>e.name);if(!date||!exercises.length){alert('Introduce la fecha y al menos un ejercicio.');return}workouts.push({id:Date.now(),date,muscle,name:$('workName').value.trim(),notes:$('workNotes').value.trim(),exercises});persist();$('exerciseRows').innerHTML='';addExerciseRow();$('workName').value='';$('workNotes').value='';showScreen('history');alert('Entrenamiento guardado.')}
+function renderAll(){renderDashboard();renderHistory();renderRecords()}
+function renderDashboard(){$('sessionCount').textContent=workouts.length;$('exerciseCount').textContent=workouts.reduce((n,w)=>n+w.exercises.length,0);let sorted=[...workouts].sort((a,b)=>b.date.localeCompare(a.date));let last=sorted[0];$('lastDate').textContent=last?fmtDate(last.date):'—';$('lastWorkout').innerHTML=last?`<b>${esc(last.muscle)}</b> ${last.name?'— '+esc(last.name):''}<br><span class="small">${last.exercises.length} ejercicios · ${fmtDate(last.date)}</span>`:'Todavía no hay entrenamientos.';$('recentSessions').innerHTML=sorted.slice(0,5).map(w=>`<div class="entry"><div class="row"><b>${esc(w.muscle)} ${w.name?'— '+esc(w.name):''}</b><span class="small">${fmtDate(w.date)}</span></div><span class="small">${w.exercises.map(e=>esc(e.name)).join(' · ')}</span></div>`).join('')||'<div class="empty">Tus sesiones aparecerán aquí.</div>'}
+function renderHistory(){let f=$('historyFilter').value;let list=[...workouts].filter(w=>!f||w.muscle===f).sort((a,b)=>b.date.localeCompare(a.date));$('historyList').innerHTML=list.map(w=>`<div class="card"><div class="row"><div><span class="pill">${esc(w.muscle)}</span><h3 style="margin:8px 0 2px">${esc(w.name||'Entrenamiento')}</h3><span class="small">${fmtDate(w.date)}</span></div><button class="danger smallbtn" onclick="deleteWorkout(${w.id})">Eliminar</button></div><table><thead><tr><th>Ejercicio</th><th>Peso</th><th>Series</th><th>Reps</th></tr></thead><tbody>${w.exercises.map(e=>`<tr><td>${esc(e.name)}</td><td>${e.weight??'—'} ${e.weight?'lb':''}</td><td>${e.sets}</td><td>${esc(e.reps||'—')}</td></tr>`).join('')}</tbody></table>${w.notes?`<p class="small">${esc(w.notes)}</p>`:''}</div>`).join('')||'<div class="empty">No hay sesiones en este filtro.</div>'}
+function deleteWorkout(id){if(confirm('¿Eliminar este entrenamiento?')){workouts=workouts.filter(w=>w.id!==id);persist()}}
+function allExerciseNames(){return [...new Set(workouts.flatMap(w=>w.exercises.map(e=>e.name)))].sort()}
+function renderProgressOptions(){let names=allExerciseNames(),sel=$('progressExercise'),old=sel.value;sel.innerHTML=names.map(n=>`<option>${esc(n)}</option>`).join('');if(names.includes(old))sel.value=old;renderProgress()}
+function renderProgress(){let name=$('progressExercise').value;if(!name){$('progressDetail').innerHTML='Añade entrenamientos para ver tu progresión.';return}let rows=workouts.flatMap(w=>w.exercises.filter(e=>e.name===name).map(e=>({date:w.date,...e}))).sort((a,b)=>a.date.localeCompare(b.date));$('progressDetail').innerHTML=`<h3 style="margin-top:14px">${esc(name)}</h3><table><thead><tr><th>Fecha</th><th>Peso</th><th>Series</th><th>Reps</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${fmtDate(r.date)}</td><td>${r.weight??'—'} lb</td><td>${r.sets}</td><td>${esc(r.reps||'—')}</td></tr>`).join('')}</tbody></table>`}
+function renderRecords(){let map={};workouts.forEach(w=>w.exercises.forEach(e=>{if(e.weight&&(!map[e.name]||e.weight>map[e.name].weight))map[e.name]={weight:e.weight,date:w.date}}));$('records').innerHTML=Object.keys(map).length?Object.entries(map).sort((a,b)=>b[1].weight-a[1].weight).map(([n,r])=>`<div class="row" style="padding:8px 0;border-bottom:1px solid var(--line)"><span>${esc(n)}</span><b class="lime">${r.weight} lb</b></div>`).join(''):'<div class="muted">Tus récords aparecerán al registrar ejercicios con peso.</div>'}
+function exportData(){let blob=new Blob([JSON.stringify({app:'Gym Tracker Pro',version:1,workouts},null,2)],{type:'application/json'});let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='gym-tracker-backup.json';a.click();URL.revokeObjectURL(a.href)}
+function importData(ev){let file=ev.target.files[0];if(!file)return;let r=new FileReader();r.onload=()=>{try{let obj=JSON.parse(r.result),arr=Array.isArray(obj)?obj:obj.workouts;if(!Array.isArray(arr))throw Error();if(confirm(`Importar ${arr.length} entrenamientos? Se combinarán con los actuales.`)){workouts=[...workouts,...arr];persist();alert('Respaldo importado.')}}catch{alert('El archivo no parece ser un respaldo válido.')}};r.readAsText(file);ev.target.value=''}
+function clearData(){if(confirm('Esto borrará todos los entrenamientos guardados en este dispositivo. ¿Continuar?')){workouts=[];persist()}}
+function seed(){if(workouts.length)return;workouts=[
+{ id:1001,date:'2026-10-29',muscle:'Piernas',name:'Piernas',notes:'Registro histórico',exercises:[{name:'Seated Leg Curl',weight:60,sets:4,reps:'12, 12, 15, 15'},{name:'Leg Press',weight:215,sets:5,reps:'15, 15, 15, 20, 20',notes:'Series anteriores: 175, 185, 205, 215, 215 lb'},{name:'Leg Extension',weight:140,sets:5,reps:'12, 12, 12, 11, 12',notes:'Series anteriores: 130, 135, 137.5, 140, 140 lb'}]},
+{ id:1002,date:'2026-10-30',muscle:'Pecho',name:'Pecho',exercises:[{name:'Chest Press Machine',weight:130,sets:5,reps:'15, 15, 15, 15, 15',notes:'Primeras 3 series: 120 lb'},{name:'Pectoral Fly',weight:110,sets:5,reps:'12, 12, 12, 12, 12'},{name:'Supine Press Machine',weight:150,sets:2,reps:'12, 30',notes:'También se registró 100 lb × 12; aclarar si 150 lb es peso total o por lado.'}]},
+{ id:1003,date:'2026-11-02',muscle:'Pecho',name:'Pecho y tríceps',exercises:[{name:'Incline Press',weight:80,sets:3,reps:'12, 12, 12',notes:'Primera serie 70 lb × 12'},{name:'Pec Fly',weight:120,sets:2,reps:'15, 15'},{name:'Chest Press',weight:132.5,sets:3,reps:'12, 12, 12'},{name:'Tricep Extension',weight:115,sets:3,reps:'15, 15, 15',notes:'95 y 105 lb en las primeras series'},{name:'Rope Tricep Pushdown',weight:40,sets:3,reps:'12, 15, 15',notes:'Primera serie 35 lb × 12'}]},
+{ id:1004,date:'2026-11-08',muscle:'Pecho',name:'Día 5 — sesión registrada',exercises:[{name:'Chest Press Machine',weight:130,sets:3,reps:'12, 15, 15',notes:'Calentamiento 80 lb × 12'},{name:'Low Row',weight:115,sets:3,reps:'12, 12, 12'}]},
+{ id:1005,date:'2026-11-09',muscle:'Piernas',name:'Piernas y abdomen',exercises:[{name:'Leg Press',weight:220,sets:3,reps:'15, 15, 15',notes:'Calentamiento 140 lb × 15'},{name:'Seated Leg Curl',weight:70,sets:3,reps:'12, 12, 12'},{name:'Leg Extension',weight:150,sets:3,reps:'12, 12, 12'},{name:'Calf Extension',weight:140,sets:3,reps:'15, 15, 15'},{name:'Glute Bridge',weight:60,sets:3,reps:'12, 12, 12'},{name:'Abdominal Crunch',weight:null,sets:3,reps:'15, 15, 15',notes:'Peso moderado'}]}
+];persist()}
+$('workDate').value=new Date().toISOString().slice(0,10);addExerciseRow();load();seed();renderAll();
+renderRoutines();
+if('serviceWorker'in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
+</script>
+</body></html>

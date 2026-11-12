@@ -1,18 +1,14 @@
 # Gym Tracker Pro
 
-PWA instalable para registrar entrenamientos y consultar un programa de 5 días.
+PWA personal para registrar entrenamientos y progresión.
 
-## Secciones
-- **Mis rutinas:** cinco sesiones con ejercicios, series, repeticiones, descansos y pesos iniciales sugeridos. Los pesos son orientativos; cuando no hay historial fiable, la app indica calibrar la carga.
-- **Mis entrenamientos:** permite cargar sesiones completas o ejercicios individuales desde una rutina y guardar el peso realmente utilizado.
-- **Historial y progreso:** conserva las sesiones y permite revisar cargas y récords.
-- **Datos y respaldo:** exportación/importación JSON.
+## Publicar / actualizar en GitHub Pages
+1. Sube el contenido de esta carpeta al repositorio `gym-tracker` y reemplaza los archivos existentes.
+2. Confirma los cambios en la rama `main`.
+3. Espera a que GitHub Pages termine el despliegue.
+4. En iPhone, abre la URL de GitHub Pages en Safari y recarga. Si ves la versión anterior, cierra la pestaña y vuelve a abrirla; el service worker usa una nueva versión de caché.
 
-Los datos se guardan localmente en el navegador. No hay sincronización automática con ChatGPT ni entre dispositivos. Exporta respaldos periódicamente.
+## Datos e historial
+Los registros se guardan en el almacenamiento local del navegador. Esta actualización conserva los datos existentes y añade el entrenamiento de hombros del 6 de noviembre si no estaba ya registrado. Exporta un respaldo desde la sección Datos antes de cambiar de dispositivo o borrar datos del navegador.
 
-## Instalar gratis en iPhone
-1. Publica los archivos en un hosting HTTPS estático, por ejemplo GitHub Pages.
-2. Abre la dirección publicada en Safari.
-3. Toca Compartir → Añadir a pantalla de inicio.
-
-La app no está publicada en internet por este paquete: primero hay que subir los archivos a un hosting.
+Las ilustraciones de ejercicios son esquemas vectoriales de referencia, no fotografías ni sustituyen la instrucción presencial. Los pesos marcados como “por calibrar” deben ajustarse con técnica y 2–3 repeticiones en reserva.
